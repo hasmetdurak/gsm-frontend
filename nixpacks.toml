@@ -1,0 +1,16 @@
+# Nixpacks configuration — overrides auto-detection for the GSM frontend.
+# Dokploy sometimes defaults to Nixpacks when it sees package.json; this
+# file tells Nixpacks to use the same Node version as our Dockerfile, and
+# to expose port 80 (the static server listens there).
+
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["npm ci --include=dev --no-audit --no-fund"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm start"

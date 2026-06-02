@@ -3,11 +3,19 @@
   "version": "1.2.0",
   "description": "GSM (Global Scalable Matrix) - Google Suite MCP Bridge frontend",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "build:css": "tailwindcss -i ./src/input.css -o ./dist/styles.css --minify --postcss",
     "watch:css": "tailwindcss -i ./src/input.css -o ./dist/styles.css --watch",
     "build": "npm run build:css",
-    "prebuild": "node scripts/build-config.js"
+    "prebuild": "node scripts/build-config.js",
+    "start": "serve . -l 0.0.0.0:80 -s --no-clipboard",
+    "serve": "serve . -l 3000 -s --no-clipboard"
+  },
+  "dependencies": {
+    "serve": "^14.2.4"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
