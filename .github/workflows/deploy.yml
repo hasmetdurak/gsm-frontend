@@ -6,37 +6,63 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  IMAGE_NAME: gsm-frontend
+
 jobs:
   docker-build-test:
-    name: Docker Build Test (Nginx static)
+    name: Build & verify Docker image
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker Image (Dry-Run)
-        uses: docker/build-push-action@v4
+      - name: Build image (dry-run, with cache)
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           push: false
-          tags: gsm-frontend:latest
+          tags: ${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test — assets served correctly
+        run: |
+          docker run --rm -d --name gsm-smoke -p 8088:80 ${{ env.IMAGE_NAME }}:latest
+          sleep 3
+          set -e
+          echo "→ /healthz"
+          curl -fsS http://127.0.0.1:8088/healthz
+          echo "→ / (HEAD)"
+          curl -fsSI http://127.0.0.1:8088/ | head -1
+          echo "→ /dist/styles.css (HEAD)"
+          curl -fsSI http://127.0.0.1:8088/dist/styles.css | head -1
+          echo "→ /app.js (HEAD)"
+          curl -fsSI http://127.0.0.1:8088/app.js | head -1
+          echo "→ /dist/config.js (HEAD)"
+          curl -fsSI http://127.0.0.1:8088/dist/config.js | head -1
+          echo "→ /nonexistent-spa-route (should still 200 with index.html)"
+          curl -fsS  http://127.0.0.1:8088/some/random/route | grep -q '<title>'
+          echo "All smoke tests passed."
+          docker stop gsm-smoke
 
   deploy-vps:
-    name: Deploy Frontend to Dokploy VPS
+    name: Trigger Dokploy deploy
     runs-on: ubuntu-latest
     needs: docker-build-test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - name: Trigger Dokploy WebHook (gsm-frontend)
+      - name: Trigger Dokploy webhook
+        env:
+          WEBHOOK: ${{ secrets.DOKPLOY_WEBHOOK_URL_FRONTEND }}
         run: |
-          if [ -n "${{ secrets.DOKPLOY_WEBHOOK_URL_FRONTEND }}" ]; then
-            echo "Triggering Dokploy webhook for gsm-frontend..."
-            curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL_FRONTEND }}"
+          if [ -n "$WEBHOOK" ]; then
+            echo "Triggering Dokploy webhook for gsm-frontend…"
+            curl -fsS -X POST "$WEBHOOK" && echo
           else
-            echo "DOKPLOY_WEBHOOK_URL_FRONTEND secret is not set. Skipping automated webhook trigger."
-            echo "Dokploy will auto-deploy if GitHub integration is enabled in Dokploy Panel."
+            echo "DOKPLOY_WEBHOOK_URL_FRONTEND not set — Dokploy will auto-deploy via Git integration."
           fi

@@ -5,24 +5,26 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+*.swn
 
 # Logs
 *.log
 npm-debug.log*
 
-# Node (ileride build pipeline eklenirse)
+# Node / build artifacts
 node_modules/
 dist/
-build/
 .cache/
+.tmp/
 
 # Secrets / Local env
 .env
 .env.local
 .env.*.local
 
-# Docker
+# Docker overrides
 docker-compose.override.yml
 
-# Git
-.git/
+# Build output (compiled, served from dist/)
+/dist/styles.css
+/dist/config.js

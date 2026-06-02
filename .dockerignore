@@ -1,0 +1,37 @@
+# Build context exclusions — keeps the Docker build fast and the image small.
+
+# VCS
+.git
+.gitignore
+.gitattributes
+
+# Docs / editor / OS
+README.md
+LICENSE*
+CHANGELOG*
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.swn
+*.log
+*.tgz
+*.tar.gz
+
+# Local artifacts
+.antigravitycli
+
+# Tooling that lives outside the runtime image
+.github
+node_modules
+src
+scripts
+package-lock.json
+tailwind.config.js
+postcss.config.js
+
+# Allow dist and nginx.conf through (explicitly kept)
+!dist/
+!nginx.conf
