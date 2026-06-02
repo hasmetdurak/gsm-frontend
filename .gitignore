@@ -1,0 +1,28 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Node (ileride build pipeline eklenirse)
+node_modules/
+dist/
+build/
+.cache/
+
+# Secrets / Local env
+.env
+.env.local
+.env.*.local
+
+# Docker
+docker-compose.override.yml
+
+# Git
+.git/
