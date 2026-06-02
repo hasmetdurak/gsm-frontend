@@ -1,4 +1,10 @@
-# Build context exclusions — keeps the Docker build fast and the image small.
+# Build context exclusions — keep the image small.
+#
+# IMPORTANT: This is a multi-stage build. The builder stage needs
+# package.json, package-lock.json, src/, scripts/, tailwind.config.js
+# and postcss.config.js to compile Tailwind. Do NOT exclude those here.
+# Only the final nginx image doesn't need them, but Docker layers
+# handle that automatically.
 
 # VCS
 .git
@@ -23,15 +29,12 @@ Thumbs.db
 # Local artifacts
 .antigravitycli
 
-# Tooling that lives outside the runtime image
-.github
+# node_modules (npm ci re-creates inside the builder)
 node_modules
-src
-scripts
-package-lock.json
-tailwind.config.js
-postcss.config.js
+.cache
+.tmp
 
-# Allow dist and nginx.conf through (explicitly kept)
-!dist/
-!nginx.conf
+# Test/lint configs we don't need at build time
+.eslintrc*
+.prettierrc*
+.github
